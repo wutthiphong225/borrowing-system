@@ -4,7 +4,7 @@ require_once 'config.php';
 
 // 1. ตรวจสอบสิทธิ์การเข้าถึง
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -155,7 +155,22 @@ $dailyStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
-        .premium-header {
+        .topbar-toggle {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .topbar-toggle:hover {
+            color: #1e293b;
+            background: #e2e8f0;
+        }        .premium-header {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -220,11 +235,11 @@ $dailyStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden pt-16 md:pt-0">
         <!-- Top Bar -->
-        <header class="premium-header z-10 px-4 py-2 flex justify-between items-center border-b border-gray-200/50">
+        <header class="premium-header z-10 px-4 md:px-6 py-3 flex justify-between items-center border-b border-gray-200/50">
             <div class="flex items-center space-x-3">
-                <div class="sidebar-toggle hidden md:flex" id="sidebar-toggle">
+                <button type="button" class="topbar-toggle hidden md:inline-flex" id="sidebar-toggle" aria-label="Toggle sidebar">
                     <i class="bi bi-chevron-left text-xs"></i>
-                </div>
+                </button>
                 <div>
                     <h1 class="text-lg font-bold text-gray-800">แผงควบคุมแอดมิน</h1>
                 </div>
@@ -423,3 +438,4 @@ $dailyStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
 </body>
 </html>
+

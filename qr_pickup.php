@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -15,35 +15,56 @@ $userProfile = $stmt->fetch();
 // Handle QR Code generation
 $qr_data = '';
 $show_qr = false;
+$borrowing = null;
 
 if (isset($_GET['generate_qr']) && isset($_GET['borrowing_id'])) {
-    $borrowing_id = $_GET['borrowing_id'];
-    
-    // Verify this borrowing belongs to current user and is approved
+    $borrowing_id = (int)$_GET['borrowing_id'];
+
+    // Verify this borrowing belongs to current user and is approved/pending pickup
     $stmt = $pdo->prepare("
         SELECT b.*, e.name as equipment_name, u.username 
         FROM borrowings b 
         JOIN equipment e ON b.equipment_id = e.id 
         JOIN users u ON b.user_id = u.id 
-        WHERE b.id = ? AND b.user_id = ? AND b.approval_status = 'approved' AND b.status = 'borrowed'
+        WHERE b.id = ? 
+          AND b.user_id = ? 
+          AND b.approval_status = 'approved' 
+          AND b.status = 'borrowed'
+          AND (b.pickup_confirmed IS NULL OR b.pickup_confirmed = 0)
     ");
     $stmt->execute([$borrowing_id, $_SESSION['user_id']]);
     $borrowing = $stmt->fetch();
-    
-    if ($borrowing) {
-        // Create QR data with borrowing information
-        $qr_data = json_encode([
-            'type' => 'equipment_pickup',
-            'borrowing_id' => $borrowing_id,
-            'user_id' => $_SESSION['user_id'],
-            'username' => $borrowing['username'],
-            'equipment_name' => $borrowing['equipment_name'],
-            'quantity' => $borrowing['quantity'],
-            'timestamp' => time(),
-            'checksum' => md5($borrowing_id . $_SESSION['user_id'] . time())
-        ]);
-        $show_qr = true;
-    }
+} else {
+    // Auto-pick latest approved borrowing when user opens page directly from menu
+    $stmt = $pdo->prepare("
+        SELECT b.*, e.name as equipment_name, u.username 
+        FROM borrowings b 
+        JOIN equipment e ON b.equipment_id = e.id 
+        JOIN users u ON b.user_id = u.id 
+        WHERE b.user_id = ? 
+          AND b.approval_status = 'approved' 
+          AND b.status = 'borrowed'
+          AND (b.pickup_confirmed IS NULL OR b.pickup_confirmed = 0)
+        ORDER BY b.created_at DESC, b.id DESC
+        LIMIT 1
+    ");
+    $stmt->execute([$_SESSION['user_id']]);
+    $borrowing = $stmt->fetch();
+}
+
+if ($borrowing) {
+    // Create QR data with borrowing information
+    $qr_data = json_encode([
+        'type' => 'equipment_pickup',
+        'borrowing_id' => $borrowing['id'],
+        'user_id' => $_SESSION['user_id'],
+        'username' => $borrowing['username'],
+        'equipment_name' => $borrowing['equipment_name'],
+        'quantity' => $borrowing['quantity'],
+        'timestamp' => time(),
+        'checksum' => md5($borrowing['id'] . $_SESSION['user_id'] . time())
+    ]);
+    $show_qr = true;
 }
 
 // Handle QR Code scan confirmation (admin scanned the code)
@@ -234,7 +255,7 @@ if (isset($_GET['confirm_pickup']) && isset($_GET['borrowing_id'])) {
         <!-- Top Bar -->
         <header class="premium-header z-10 px-8 py-4 flex justify-between items-center border-b border-gray-200/50">
             <div class="flex items-center space-x-6">
-                <div class="sidebar-toggle hidden md:flex" id="sidebar-toggle">
+                <div class="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors" id="sidebar-toggle">
                     <i class="bi bi-chevron-left text-xs"></i>
                 </div>
                 <div>
@@ -399,3 +420,5 @@ if (isset($_GET['confirm_pickup']) && isset($_GET['borrowing_id'])) {
     </script>
 </body>
 </html>
+
+

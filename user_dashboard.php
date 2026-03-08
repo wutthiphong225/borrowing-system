@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -12,42 +12,49 @@ $alertScript = '';
 // Borrow equipment
 if (isset($_POST['borrow_equipment'])) {
     $items = $_POST['items'] ?? [];
-    $borrow_date = $_POST['borrow_date'];
+    $borrow_date = $_POST['borrow_date'] ?? '';
     $today = date('Y-m-d');
 
     if (empty($items)) {
-        $alertScript = "$.alert({ title: 'ข้อผิดพลาด', content: 'กรุณาเลือกอุปกรณ์ที่ต้องการยืม', type: 'red', theme: 'modern' });";
+        $alertScript = "$.alert({ title: 'Error', content: 'Please select at least one item.', type: 'red', theme: 'modern' });";
+    } elseif (empty($borrow_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $borrow_date)) {
+        $alertScript = "$.alert({ title: 'Error', content: 'Please select a valid borrow date.', type: 'red', theme: 'modern' });";
     } elseif (strtotime($borrow_date) < strtotime($today)) {
-        // แจ้งเตือนกรณีผู้ใช้พยายามส่งค่าจาก Inspect หรือย้อนหลัง
-        $alertScript = "$.alert({ title: 'ข้อผิดพลาด', content: 'ไม่สามารถเลือกวันที่ย้อนหลังได้', type: 'red', theme: 'modern' });";
+        $alertScript = "$.alert({ title: 'Error', content: 'Borrow date cannot be in the past.', type: 'red', theme: 'modern' });";
     } else {
-        $pdo->beginTransaction(); // ใช้เพื่อป้องกันข้อมูลผิดพลาดหากยืมหลายชิ้นแล้วชิ้นใดชิ้นหนึ่งมีปัญหา
+        $pdo->beginTransaction();
         try {
             foreach ($items as $item) {
-                $equipment_id = $item['equipment_id'];
-                $quantity = $item['quantity'];
+                $equipment_id = isset($item['equipment_id']) ? (int)$item['equipment_id'] : 0;
+                $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 0;
 
-                // 1. เช็กจำนวนคงเหลือจริงใน DB อีกครั้ง
+                if ($equipment_id <= 0 || $quantity <= 0) {
+                    throw new Exception('Invalid borrow item data.');
+                }
+
                 $stmt = $pdo->prepare("SELECT quantity FROM equipment WHERE id = ?");
                 $stmt->execute([$equipment_id]);
                 $available = $stmt->fetchColumn();
 
-                if ($quantity > $available) { throw new Exception("สินค้าไม่พอ"); }
+                if ($available === false) {
+                    throw new Exception('Equipment not found.');
+                }
+                if ($quantity > (int)$available) {
+                    throw new Exception('Requested quantity exceeds available stock.');
+                }
 
-                // 2. บันทึกข้อมูลการยืม (สถานะ pending รอการอนุมัติ)
                 $stmt = $pdo->prepare("INSERT INTO borrowings (user_id, equipment_id, quantity, borrow_date, status, approval_status) VALUES (?, ?, ?, ?, 'borrowed', 'pending')");
                 $stmt->execute([$_SESSION['user_id'], $equipment_id, $quantity, $borrow_date]);
-
-                // หมายเหตุ: ไม่ตัดสต็อกทันที รอให้ admin อนุมัติก่อน
             }
+
             $pdo->commit();
-            $alertScript = "$.alert({ title: 'สำเร็จ', content: 'ส่งคำร้องยืมอุปกรณ์เรียบร้อยแล้ว กรุณารอการอนุมัติจากผู้ดูแลระบบ', type: 'blue', theme: 'modern', icon: 'bi bi-clock-history' });";
+            $alertScript = "$.alert({ title: 'Success', content: 'Borrow request submitted successfully.', type: 'blue', theme: 'modern', icon: 'bi bi-clock-history' });";
         } catch (Exception $e) {
             $pdo->rollBack();
+            $alertScript = "$.alert({ title: 'Error', content: '" . addslashes($e->getMessage()) . "', type: 'red', theme: 'modern' });";
         }
     }
 }
-
 // Return equipment
 if (isset($_GET['return_borrowing'])) {
     $borrowing_id = $_GET['return_borrowing'];
@@ -384,7 +391,7 @@ foreach ($borrowings as $b) {
         <!-- Top Bar -->
         <header class="premium-header z-10 px-8 py-4 flex justify-between items-center border-b border-gray-200/50">
             <div class="flex items-center space-x-6">
-                <div class="sidebar-toggle hidden md:flex" id="sidebar-toggle">
+                <div class="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors" id="sidebar-toggle">
                     <i class="bi bi-chevron-left text-xs"></i>
                 </div>
                 <div>
@@ -850,14 +857,6 @@ foreach ($borrowings as $b) {
         }
 
         $(document).ready(function() {
-    // เซ็ตค่าเริ่มต้นเป็นวันที่ปัจจุบันทุกครั้งที่โหลดหน้า
-    const now = new Date().toISOString().split('T')[0];
-    if ($('#borrow_date').val() === '') {
-        $('#borrow_date').val(now);
-    }
-    $('#borrow_date').attr('min', now);
-});
-        $(document).ready(function() {
             <?php if ($alertScript): ?>
                 <?php echo $alertScript; ?>
             <?php endif; ?>
@@ -872,3 +871,6 @@ foreach ($borrowings as $b) {
     </style>
 </body>
 </html>
+
+
+

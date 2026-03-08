@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -278,7 +278,7 @@ $adminProfile = $stmt->fetch();
         <!-- Top Bar -->
         <header class="premium-header z-10 px-4 py-2 flex justify-between items-center border-b border-gray-200/50">
             <div class="flex items-center space-x-3">
-                <div class="sidebar-toggle hidden md:flex" id="sidebar-toggle">
+                <div class="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors" id="sidebar-toggle">
                     <i class="bi bi-chevron-left text-xs"></i>
                 </div>
                 <div>
@@ -533,3 +533,5 @@ $adminProfile = $stmt->fetch();
     </script>
 </body>
 </html>
+
+

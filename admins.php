@@ -4,7 +4,7 @@ require_once 'config.php';
 
 // 1. ตรวจสอบสิทธิ์
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -19,6 +19,9 @@ $alertScript = '';
 if (isset($_GET['ajax'])) {
     $search = isset($_GET['search']) ? "%" . $_GET['search'] . "%" : "%%";
     $role_filter = isset($_GET['role_filter']) ? $_GET['role_filter'] : "";
+    if ($role_filter === 'member') {
+        $role_filter = 'user';
+    }
 
     $sql = "SELECT id, username, first_name, last_name, profile_image, role, created_at FROM users WHERE username LIKE :search";
     if ($role_filter != "") { $sql .= " AND role = :role"; }
@@ -90,6 +93,9 @@ if (isset($_POST['add_member'])) {
     $user = trim($_POST['username']);
     $pass = $_POST['password'];
     $role = $_POST['role'];
+    if ($role === 'member') {
+        $role = 'user';
+    }
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
     
@@ -124,6 +130,9 @@ if (isset($_POST['update_member'])) {
     $id = $_POST['user_id'];
     $user = trim($_POST['username']);
     $role = $_POST['role'];
+    if ($role === 'member') {
+        $role = 'user';
+    }
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
     
@@ -337,7 +346,7 @@ if (isset($_GET['delete_id'])) {
         <!-- Top Bar -->
         <header class="premium-header z-10 px-4 py-2 flex justify-between items-center border-b border-gray-200/50">
             <div class="flex items-center space-x-3">
-                <div class="sidebar-toggle hidden md:flex" id="sidebar-toggle">
+                <div class="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors" id="sidebar-toggle">
                     <i class="bi bi-chevron-left text-xs"></i>
                 </div>
                 <div>
@@ -397,7 +406,7 @@ if (isset($_GET['delete_id'])) {
                         <select id="roleFilter" onchange="loadMembers()" class="px-4 py-3 bg-white/80 backdrop-blur border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm text-gray-600">
                             <option value="">ทุกสิทธิ์</option>
                             <option value="admin">Admin</option>
-                            <option value="member">Member</option>
+                            <option value="user">Member</option>
                         </select>
                     </div>
                 </div>
@@ -460,7 +469,7 @@ if (isset($_GET['delete_id'])) {
                         <label class="block text-sm font-semibold text-gray-700 mb-2">สิทธิ์</label>
                         <select name="role" required class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all">
                             <option value="">เลือกสิทธิ์</option>
-                            <option value="member">Member</option>
+                            <option value="user">Member</option>
                             <option value="admin">Admin</option>
                         </select>
                     </div>
@@ -525,7 +534,7 @@ if (isset($_GET['delete_id'])) {
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">สิทธิ์</label>
                         <select name="role" id="editRole" required class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20">
-                            <option value="member">Member</option>
+                            <option value="user">Member</option>
                             <option value="admin">Admin</option>
                         </select>
                     </div>
@@ -589,14 +598,6 @@ if (isset($_GET['delete_id'])) {
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.toggle('hidden');
-                modal.classList.toggle('fixed');
-                modal.classList.toggle('inset-0');
-                modal.classList.toggle('bg-black/50');
-                modal.classList.toggle('z-50');
-                modal.classList.toggle('flex');
-                modal.classList.toggle('items-center');
-                modal.classList.toggle('justify-center');
-                modal.classList.toggle('p-4');
             }
         }
 
@@ -662,3 +663,6 @@ if (isset($_GET['delete_id'])) {
     </script>
 </body>
 </html>
+
+
+

@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login');
+    header('Location: login.php');
     exit;
 }
 
@@ -203,27 +203,27 @@ $admins = $pdo->query("SELECT * FROM users WHERE role = 'admin'")->fetchAll();
         </div>
         <ul class="nav flex-column p-3">
             <li class="nav-item">
-                <a class="nav-link active" href="categorie"><i class="bi bi-tags"></i> Categories</a>
+                <a class="nav-link active" href="categorie.php"><i class="bi bi-tags"></i> Categories</a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="equipment"><i class="bi bi-tools"></i> Equipment</a>
+                <a class="nav-link" href="equipment.php"><i class="bi bi-tools"></i> Equipment</a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="admins"><i class="bi bi-people-fill"></i> Admins</a>
+                <a class="nav-link" href="admins.php"><i class="bi bi-people-fill"></i> Admins</a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="calendar"><i class="bi bi-calendar-date"></i> Calendar</a>
+                <a class="nav-link" href="calendar.php"><i class="bi bi-calendar-date"></i> Calendar</a>
             </li>
 
 
             <li class="nav-item">
-                <a class="nav-link" href="borrowing_dashboard"><i class="bi bi-bar-chart"></i> Borrowing Dashboard</a>
+                <a class="nav-link" href="admin_dashboard.php"><i class="bi bi-bar-chart"></i> Borrowing Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </li>
         </ul>
     </div>

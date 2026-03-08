@@ -19,31 +19,32 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
     
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        <a href="user_dashboard" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'user_dashboard.php') ? 'active' : '' ?>">
+        <a href="user_dashboard.php" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'user_dashboard.php') ? 'active' : '' ?>">
             <i class="sidebar-icon bi bi-grid-fill mr-3 text-lg"></i> 
             <span class="sidebar-text font-medium">ยืมอุปกรณ์</span>
         </a>
 
-        <a href="user_history" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'user_history.php') ? 'active' : '' ?>">
+        <a href="qr_pickup.php" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'qr_pickup.php') ? 'active' : '' ?>">
             <i class="sidebar-icon bi bi-clock-history mr-3 text-lg"></i> 
             <span class="sidebar-text font-medium">ประวัติการยืม</span>
         </a>
         
-        <a href="borrowing_dashboard" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'borrowing_dashboard.php') ? 'active' : '' ?>">
+        <a href="user_dashboard.php#history-section" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'user_dashboard.php') ? 'active' : '' ?>">
             <i class="sidebar-icon bi bi-graph-up mr-3 text-lg"></i> 
             <span class="sidebar-text font-medium">สถิติการยืม</span>
         </a>
         
-        <a href="profile" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'profile.php') ? 'active' : '' ?>">
+        <a href="profile.php" class="sidebar-item flex items-center px-4 py-3 transition-all duration-200 rounded-xl <?= ($current_page == 'profile.php') ? 'active' : '' ?>">
             <i class="sidebar-icon bi bi-person-circle mr-3 text-lg"></i> 
             <span class="sidebar-text font-medium">โปรไฟล์ของฉัน</span>
         </a>
     </nav>
 
     <div class="p-4 border-t border-gray-700/30 mt-auto">
-        <a href="logout" class="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg">
+        <a href="logout.php" class="flex items-center px-4 py-2 text-gray-300 hover:text-white transition-colors hover:bg-white/5 rounded-lg">
             <i class="sidebar-icon bi bi-box-arrow-right mr-3"></i> 
             <span class="sidebar-text">ออกจากระบบ</span>
         </a>
     </div>
 </aside>
+
